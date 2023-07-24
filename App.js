@@ -1,10 +1,14 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { useFetchRandomJoke } from "./api";
 
 export default function App() {
+  const { data, isLoading } = useFetchRandomJoke();
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      {isLoading && <ActivityIndicator />}
+      {!isLoading && data && <Text style={styles.text}>{data.joke}</Text>}
       <StatusBar style="auto" />
     </View>
   );
@@ -13,8 +17,13 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontSize: 20,
+    textAlign: "center",
   },
 });
