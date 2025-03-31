@@ -148,7 +148,6 @@ export default function App() {
                     )}
                   </Card.Content>
                 </View>
-                <View style={styles.cardBorder} />
               </View>
             </Pressable>
           </Animated.View>
@@ -180,29 +179,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    borderWidth: 2,
-    borderColor: "#E0E0E0",
-    borderStyle: "solid",
+    boxShadow: "0 5px 5px 0 rgba(0, 0, 0, 0.20), 0 5px 20px 10px rgba(0, 0, 0, 0.15)",
     zIndex: 2,
-  },
-  cardBorder: {
-    position: "absolute",
-    top: 4,
-    left: 4,
-    right: 4,
-    bottom: 4,
-    borderWidth: 1,
-    borderColor: "#BDBDBD",
-    borderStyle: "dashed",
-    borderRadius: 10,
-    zIndex: 1,
   },
   loadingContainer: {
     padding: 20,
