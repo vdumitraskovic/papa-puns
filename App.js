@@ -101,6 +101,23 @@ export default function App() {
     <PaperProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar style="auto" />
+        <View style={styles.backgroundPattern}>
+          {[...Array(20)].map((_, rowIndex) => (
+            <View 
+              key={rowIndex} 
+              style={[
+                styles.patternRow,
+                { marginLeft: rowIndex % 2 === 0 ? 0 : 40 }
+              ]}
+            >
+              {[...Array(20)].map((_, colIndex) => (
+                <View key={colIndex} style={styles.patternCell}>
+                  <View style={styles.roundedSquare} />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
         <View style={styles.contentContainer}>
           {isInitial && (
             <View style={styles.loadingContainer}>
@@ -161,12 +178,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1976D2",
+    overflow: 'hidden',
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    top: -100,
+    left: -100,
+    right: -100,
+    bottom: -100,
+    backgroundColor: '#1976D2',
+    transform: [{ rotate: '15deg' }],
+    opacity: 0.08,
+  },
+  patternRow: {
+    flexDirection: 'row',
+    height: 40,
+    marginBottom: 40,
+  },
+  patternCell: {
+    width: 40,
+    height: 40,
+    marginRight: 40,
+    position: 'relative',
+  },
+  roundedSquare: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
   },
   contentContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
+    zIndex: 1,
   },
   cardContainer: {
     width: "100%",
