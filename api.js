@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const serviceApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const getApiUrl = (url) => new URL(url, serviceApiUrl).toString();
@@ -20,25 +20,27 @@ export const useFetchRandomJoke = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetchRandomJoke();
-        setData(response);
-        setIsLoading(false);
-      } catch (e) {
-        setError(e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetchRandomJoke();
+      setData(response);
+      setError(null);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return {
     data,
     isLoading,
     error,
+    refetch: fetchData,
   };
 };
