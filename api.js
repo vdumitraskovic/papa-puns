@@ -15,21 +15,28 @@ const fetchRandomJoke = async () => {
   return res.json();
 };
 
+const State = {
+  INITIAL: 'INITIAL',
+  PENDING: 'PENDING',
+  ERROR: 'ERROR',
+  SUCCESS: 'SUCCESS',
+};
+
 export const useFetchRandomJoke = () => {
-  const [data, setData] = useState();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState();
+  const [state, setState] = useState(State.INITIAL);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
+    setState(State.PENDING);
     try {
       const response = await fetchRandomJoke();
       setData(response);
       setError(null);
+      setState(State.SUCCESS);
     } catch (e) {
       setError(e);
-    } finally {
-      setIsLoading(false);
+      setState(State.ERROR);
     }
   }, []);
 
@@ -39,8 +46,11 @@ export const useFetchRandomJoke = () => {
 
   return {
     data,
-    isLoading,
     error,
+    isInitial: state === State.INITIAL,
+    isLoading: state === State.PENDING,
+    isError: state === State.ERROR,
+    isSuccess: state === State.SUCCESS,
     refetch: fetchData,
   };
 };

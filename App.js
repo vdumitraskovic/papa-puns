@@ -3,39 +3,72 @@ import {
   StyleSheet, 
   View, 
   Animated, 
-  Dimensions,
   Easing,
   Pressable,
 } from "react-native";
 import { useFetchRandomJoke } from "./api";
 import { PaperProvider, Card, Text, ActivityIndicator, Button, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
-const { width } = Dimensions.get("window");
+const JOKE_EMOJIS = ["😄", "😂", "🤣", "😅", "😆", "😉", "😋", "😎", "😍", "🤪", "😜", "😝", "🤗", "🤭", "🤫"];
 
 export default function App() {
-  const { data, isLoading, error, refetch } = useFetchRandomJoke();
-  const theme = useTheme();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { 
+    data, 
+    isInitial,
+    isLoading,
+    isError,
+    isSuccess,
+    refetch 
+  } = useFetchRandomJoke();
+  const spinnerFadeAnim = useRef(new Animated.Value(1)).current;
+  const cardScaleAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const [currentEmoji, setCurrentEmoji] = useState(JOKE_EMOJIS[0]);
 
   useEffect(() => {
-    // Početna animacija sa delay-om i boljim easing-om
-    Animated.sequence([
-      Animated.delay(100),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        easing: Easing.bezier(0.4, 0, 0.2, 1),
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
+    if (data) {
+      // Fade out spinner and zoom in card with rotation
+      Animated.parallel([
+        Animated.timing(spinnerFadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardScaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 8,
+          tension: 100,
+        }),
+        Animated.spring(rotateAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (isLoading) {
+      // Start continuous rotation
+      rotateAnim.setValue(0);
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.bezier(0.4, 0, 0.2, 1),
+          useNativeDriver: true,
+        })
+      ).start();
+    }
+  }, [isLoading]);
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
+    Animated.spring(cardScaleAnim, {
       toValue: 0.98,
       useNativeDriver: true,
       friction: 8,
@@ -44,7 +77,7 @@ export default function App() {
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
+    Animated.spring(cardScaleAnim, {
       toValue: 1,
       useNativeDriver: true,
       friction: 8,
@@ -53,19 +86,9 @@ export default function App() {
   };
 
   const handleNewJoke = () => {
-    Animated.sequence([
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 800,
-        easing: Easing.bezier(0.4, 0, 0.2, 1), // Material Design easing
-        useNativeDriver: true,
-      }),
-      Animated.timing(rotateAnim, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // Randomly select a new emoji
+    const randomEmoji = JOKE_EMOJIS[Math.floor(Math.random() * JOKE_EMOJIS.length)];
+    setCurrentEmoji(randomEmoji);
     refetch();
   };
 
@@ -79,13 +102,18 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         <StatusBar style="auto" />
         <View style={styles.contentContainer}>
+          {isInitial && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={[styles.loadingText, { color: "#FFFFFF" }]}>Loading joke...</Text>
+            </View>
+          )}
           <Animated.View 
             style={[
               styles.cardContainer, 
               {
-                opacity: fadeAnim,
                 transform: [
-                  { scale: scaleAnim },
+                  { scale: cardScaleAnim },
                   { rotate: spin }
                 ]
               }
@@ -95,33 +123,33 @@ export default function App() {
               onPressIn={handlePressIn} 
               onPressOut={handlePressOut}
             >
-              <Card style={styles.card}>
-                <Card.Content>
-                  {isLoading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" />
-                      <Text style={styles.loadingText}>Loading joke...</Text>
-                    </View>
-                  ) : error ? (
-                    <Text style={styles.errorText}>
-                      An error occurred. Please try again.
-                    </Text>
-                  ) : (
-                    <View style={styles.jokeContainer}>
-                      <Text variant="headlineMedium" style={styles.jokeText}>
-                        {data?.joke}
+              <View style={styles.cardWrapper}>
+                <View style={styles.card}>
+                  <Card.Content>
+                    {isError ? (
+                      <Text style={styles.errorText}>
+                        An error occurred. Please try again.
                       </Text>
-                      <Button 
-                        mode="contained" 
-                        onPress={handleNewJoke}
-                        style={styles.button}
-                      >
-                        New Joke
-                      </Button>
-                    </View>
-                  )}
-                </Card.Content>
-              </Card>
+                    ) : (
+                      <View style={styles.jokeContainer}>
+                        <Text style={styles.jokeEmoji}>{currentEmoji}</Text>
+                        <Text variant="headlineMedium" style={styles.jokeText}>
+                          {data?.joke}
+                        </Text>
+                        <Button 
+                          mode="contained" 
+                          onPress={handleNewJoke}
+                          style={styles.button}
+                          icon="refresh"
+                        >
+                          New Joke
+                        </Button>
+                      </View>
+                    )}
+                  </Card.Content>
+                </View>
+                <View style={styles.cardBorder} />
+              </View>
             </Pressable>
           </Animated.View>
         </View>
@@ -145,10 +173,36 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
   },
+  cardWrapper: {
+    position: "relative",
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    elevation: 4,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    borderWidth: 2,
+    borderColor: "#E0E0E0",
+    borderStyle: "solid",
+    zIndex: 2,
+  },
+  cardBorder: {
+    position: "absolute",
+    top: 4,
+    left: 4,
+    right: 4,
+    bottom: 4,
+    borderWidth: 1,
+    borderColor: "#BDBDBD",
+    borderStyle: "dashed",
+    borderRadius: 10,
+    zIndex: 1,
   },
   loadingContainer: {
     padding: 20,
@@ -160,12 +214,23 @@ const styles = StyleSheet.create({
   },
   jokeContainer: {
     padding: 20,
+    position: "relative",
+  },
+  jokeEmoji: {
+    position: "absolute",
+    top: -20,
+    right: -20,
+    fontSize: 64,
+    zIndex: 2,
+    transform: [{ rotate: "15deg" }],
   },
   jokeText: {
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 24,
     lineHeight: 28,
     fontSize: 18,
+    color: "#333",
+    paddingRight: 40,
   },
   errorText: {
     textAlign: "center",
@@ -175,6 +240,19 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 16,
-    marginBottom: 8,
+    backgroundColor: "#1976D2",
+    alignSelf: "flex-start",
+    zIndex: 3,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
   },
 });
