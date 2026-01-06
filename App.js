@@ -1,8 +1,8 @@
 import { StatusBar } from "expo-status-bar";
-import { 
-  StyleSheet, 
-  View, 
-  Animated, 
+import {
+  StyleSheet,
+  View,
+  Animated,
   Easing,
   Pressable,
 } from "react-native";
@@ -13,14 +13,15 @@ import { useRef, useEffect, useState } from "react";
 
 const JOKE_EMOJIS = ["😄", "😂", "🤣", "😅", "😆", "😉", "😋", "😎", "😍", "🤪", "😜", "😝", "🤗", "🤭", "🤫"];
 
+
 export default function App() {
-  const { 
-    data, 
+  const {
+    data,
     isInitial,
     isLoading,
     isError,
     isSuccess,
-    refetch 
+    refetch
   } = useFetchRandomJoke();
   const spinnerFadeAnim = useRef(new Animated.Value(1)).current;
   const cardScaleAnim = useRef(new Animated.Value(0)).current;
@@ -103,8 +104,8 @@ export default function App() {
         <StatusBar style="auto" />
         <View style={styles.backgroundPattern}>
           {[...Array(20)].map((_, rowIndex) => (
-            <View 
-              key={rowIndex} 
+            <View
+              key={rowIndex}
               style={[
                 styles.patternRow,
                 { marginLeft: rowIndex % 2 === 0 ? 0 : 40 }
@@ -125,9 +126,9 @@ export default function App() {
               <Text style={[styles.loadingText, { color: "#FFFFFF" }]}>Loading joke...</Text>
             </View>
           )}
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.cardContainer, 
+              styles.cardContainer,
               {
                 transform: [
                   { scale: cardScaleAnim },
@@ -136,8 +137,8 @@ export default function App() {
               }
             ]}
           >
-            <Pressable 
-              onPressIn={handlePressIn} 
+            <Pressable
+              onPressIn={handlePressIn}
               onPressOut={handlePressOut}
             >
               <View style={styles.cardWrapper}>
@@ -153,8 +154,8 @@ export default function App() {
                         <Text variant="headlineMedium" style={styles.jokeText}>
                           {data?.joke}
                         </Text>
-                        <Button 
-                          mode="contained" 
+                        <Button
+                          mode="contained"
                           onPress={handleNewJoke}
                           style={styles.button}
                           icon="refresh"
