@@ -7,7 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import { useFetchRandomJoke } from "./api";
-import { PaperProvider, Card, Text, ActivityIndicator, Button, useTheme } from "react-native-paper";
+import { PaperProvider, Card, Text, ActivityIndicator, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRef, useEffect, useState } from "react";
 
@@ -20,8 +20,7 @@ export default function App() {
     isInitial,
     isLoading,
     isError,
-    isSuccess,
-    refetch
+    refreshJoke
   } = useFetchRandomJoke();
   const spinnerFadeAnim = useRef(new Animated.Value(1)).current;
   const cardScaleAnim = useRef(new Animated.Value(0)).current;
@@ -51,7 +50,7 @@ export default function App() {
         }),
       ]).start();
     }
-  }, [isSuccess, data]);
+  }, [data]);
 
   useEffect(() => {
     if (isLoading) {
@@ -90,13 +89,14 @@ export default function App() {
     // Randomly select a new emoji
     const randomEmoji = JOKE_EMOJIS[Math.floor(Math.random() * JOKE_EMOJIS.length)];
     setCurrentEmoji(randomEmoji);
-    refetch();
+    refreshJoke();
   };
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
+  const showLoading = (isInitial || isLoading) && !data;
 
   return (
     <PaperProvider>
@@ -120,7 +120,7 @@ export default function App() {
           ))}
         </View>
         <View style={styles.contentContainer}>
-          {isInitial && (
+          {showLoading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#FFFFFF" />
               <Text style={[styles.loadingText, { color: "#FFFFFF" }]}>Loading joke...</Text>

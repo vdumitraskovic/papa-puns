@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { readDailyJoke, writeDailyJoke, isToday } from "./cache";
 
 const serviceApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const getApiUrl = (url) => new URL(url, serviceApiUrl).toString();
@@ -26,23 +27,67 @@ export const useFetchRandomJoke = () => {
   const [state, setState] = useState(State.INITIAL);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const isMountedRef = useRef(true);
 
-  const fetchData = useCallback(async () => {
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const commitPending = () => {
+    if (!isMountedRef.current) {
+      return;
+    }
     setState(State.PENDING);
+  };
+
+  const commitSuccess = (joke) => {
+    if (!isMountedRef.current) {
+      return;
+    }
+    setData(joke);
+    setError(null);
+    setState(State.SUCCESS);
+  };
+
+  const commitError = (err) => {
+    if (!isMountedRef.current) {
+      return;
+    }
+    setError(err);
+    setState(State.ERROR);
+  };
+
+  const fetchAndCacheJoke = useCallback(async () => {
+    commitPending();
     try {
       const response = await fetchRandomJoke();
-      setData(response);
-      setError(null);
-      setState(State.SUCCESS);
+      await writeDailyJoke(response);
+      commitSuccess(response);
     } catch (e) {
-      setError(e);
-      setState(State.ERROR);
+      const cached = await readDailyJoke();
+      if (cached?.joke) {
+        commitSuccess(cached.joke);
+        return;
+      }
+      commitError(e);
     }
   }, []);
 
+  const loadDailyJoke = useCallback(async () => {
+    const cached = await readDailyJoke();
+    if (cached?.date && isToday(cached.date) && cached?.joke) {
+      commitSuccess(cached.joke);
+      return;
+    }
+
+    await fetchAndCacheJoke();
+  }, [fetchAndCacheJoke]);
+
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    loadDailyJoke();
+  }, [loadDailyJoke]);
 
   return {
     data,
@@ -51,6 +96,6 @@ export const useFetchRandomJoke = () => {
     isLoading: state === State.PENDING,
     isError: state === State.ERROR,
     isSuccess: state === State.SUCCESS,
-    refetch: fetchData,
+    refreshJoke: fetchAndCacheJoke,
   };
 };
