@@ -10,6 +10,8 @@ import { useFetchRandomJoke } from "./api";
 import { PaperProvider, Card, Text, ActivityIndicator, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRef, useEffect, useState } from "react";
+import { configureNotificationHandler, ensureNotificationsReady } from "./notifications";
+import { registerDailyJokeBackgroundTask } from "./backgroundTask";
 
 const JOKE_EMOJIS = ["😄", "😂", "🤣", "😅", "😆", "😉", "😋", "😎", "😍", "🤪", "😜", "😝", "🤗", "🤭", "🤫"];
 
@@ -26,6 +28,16 @@ export default function App() {
   const cardScaleAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const [currentEmoji, setCurrentEmoji] = useState(JOKE_EMOJIS[0]);
+
+  useEffect(() => {
+    const setupBackgroundNotifications = async () => {
+      configureNotificationHandler();
+      await ensureNotificationsReady();
+      await registerDailyJokeBackgroundTask();
+    };
+
+    setupBackgroundNotifications();
+  }, []);
 
   useEffect(() => {
     if (data) {

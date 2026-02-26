@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { readDailyJoke, writeDailyJoke, isToday } from "./cache";
+import { scheduleNewJokeNotification } from "./notifications";
 
 const serviceApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const getApiUrl = (url) => new URL(url, serviceApiUrl).toString();
@@ -14,6 +15,36 @@ const fetchRandomJoke = async () => {
     },
   });
   return res.json();
+};
+
+export const fetchAndStoreJoke = async ({
+  forceFetch = false,
+  notifyOnNewJoke = false,
+} = {}) => {
+  const cached = await readDailyJoke();
+  const hasTodayJoke = Boolean(cached?.date && isToday(cached.date) && cached?.joke);
+
+  if (hasTodayJoke && !forceFetch) {
+    return {
+      joke: cached.joke,
+      fromCache: true,
+      hasNewJoke: false,
+    };
+  }
+
+  const response = await fetchRandomJoke();
+  await writeDailyJoke(response);
+
+  const hasNewJoke = Boolean(cached?.joke && cached?.date && !isToday(cached.date));
+  if (notifyOnNewJoke && hasNewJoke) {
+    await scheduleNewJokeNotification(response?.joke);
+  }
+
+  return {
+    joke: response,
+    fromCache: false,
+    hasNewJoke,
+  };
 };
 
 const State = {
@@ -59,12 +90,14 @@ export const useFetchRandomJoke = () => {
     setState(State.ERROR);
   };
 
-  const fetchAndCacheJoke = useCallback(async () => {
+  const fetchAndCacheJoke = useCallback(async ({ forceFetch = true } = {}) => {
     commitPending();
     try {
-      const response = await fetchRandomJoke();
-      await writeDailyJoke(response);
-      commitSuccess(response);
+      const result = await fetchAndStoreJoke({
+        forceFetch,
+        notifyOnNewJoke: false,
+      });
+      commitSuccess(result.joke);
     } catch (e) {
       const cached = await readDailyJoke();
       if (cached?.joke) {
@@ -82,7 +115,7 @@ export const useFetchRandomJoke = () => {
       return;
     }
 
-    await fetchAndCacheJoke();
+    await fetchAndCacheJoke({ forceFetch: false });
   }, [fetchAndCacheJoke]);
 
   useEffect(() => {
@@ -96,6 +129,6 @@ export const useFetchRandomJoke = () => {
     isLoading: state === State.PENDING,
     isError: state === State.ERROR,
     isSuccess: state === State.SUCCESS,
-    refreshJoke: fetchAndCacheJoke,
+    refreshJoke: () => fetchAndCacheJoke({ forceFetch: true }),
   };
 };
