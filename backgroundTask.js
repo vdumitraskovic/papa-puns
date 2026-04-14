@@ -1,4 +1,4 @@
-import * as BackgroundFetch from "expo-background-fetch";
+import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
 import { fetchAndStoreJoke } from "./api";
 
@@ -12,23 +12,16 @@ if (!TaskManager.isTaskDefined(DAILY_JOKE_BACKGROUND_TASK)) {
         notifyOnNewJoke: true,
       });
 
-      if (result.fromCache) {
-        return BackgroundFetch.BackgroundFetchResult.NoData;
-      }
-
-      return BackgroundFetch.BackgroundFetchResult.NewData;
+      return BackgroundTask.BackgroundTaskResult.Success;
     } catch (e) {
-      return BackgroundFetch.BackgroundFetchResult.Failed;
+      return BackgroundTask.BackgroundTaskResult.Failed;
     }
   });
 }
 
 export const registerDailyJokeBackgroundTask = async () => {
-  const status = await BackgroundFetch.getStatusAsync();
-  if (
-    status === BackgroundFetch.BackgroundFetchStatus.Restricted ||
-    status === BackgroundFetch.BackgroundFetchStatus.Denied
-  ) {
+  const status = await BackgroundTask.getStatusAsync();
+  if (status !== BackgroundTask.BackgroundTaskStatus.Available) {
     return false;
   }
 
@@ -37,10 +30,8 @@ export const registerDailyJokeBackgroundTask = async () => {
     return true;
   }
 
-  await BackgroundFetch.registerTaskAsync(DAILY_JOKE_BACKGROUND_TASK, {
-    minimumInterval: 60 * 60,
-    stopOnTerminate: false,
-    startOnBoot: true,
+  await BackgroundTask.registerTaskAsync(DAILY_JOKE_BACKGROUND_TASK, {
+    minimumInterval: 60,
   });
 
   return true;

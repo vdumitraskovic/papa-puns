@@ -5,12 +5,17 @@ import {
   Animated,
   Easing,
   Pressable,
+  Alert,
+  Linking,
 } from "react-native";
 import { useFetchRandomJoke } from "./api";
 import { PaperProvider, Card, Text, ActivityIndicator, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRef, useEffect, useState } from "react";
-import { configureNotificationHandler, ensureNotificationsReady } from "./notifications";
+import {
+  configureNotificationHandler,
+  ensureNotificationsReady,
+} from "./notifications";
 import { registerDailyJokeBackgroundTask } from "./backgroundTask";
 
 const JOKE_EMOJIS = ["😄", "😂", "🤣", "😅", "😆", "😉", "😋", "😎", "😍", "🤪", "😜", "😝", "🤗", "🤭", "🤫"];
@@ -32,7 +37,25 @@ export default function App() {
   useEffect(() => {
     const setupBackgroundNotifications = async () => {
       configureNotificationHandler();
-      await ensureNotificationsReady();
+      const permissionStatus = await ensureNotificationsReady();
+      if (permissionStatus.shouldOpenSettings) {
+        Alert.alert(
+          "Enable Notifications",
+          "Notifications are turned off for Papa Puns. Enable them in system settings to get alerts when a new joke is fetched.",
+          [
+            {
+              text: "Not Now",
+              style: "cancel",
+            },
+            {
+              text: "Open Settings",
+              onPress: () => {
+                Linking.openSettings().catch(() => {});
+              },
+            },
+          ]
+        );
+      }
       await registerDailyJokeBackgroundTask();
     };
 

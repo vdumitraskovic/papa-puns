@@ -1,9 +1,20 @@
-import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 const NEW_JOKE_CHANNEL_ID = "new-joke-alerts";
 const JOKE_PREVIEW_MAX_LENGTH = 85;
+
+export const toPermissionStatus = (permissions) => {
+  const granted = Boolean(permissions?.granted);
+  const canAskAgain = permissions?.canAskAgain !== false;
+
+  return {
+    granted,
+    canAskAgain,
+    shouldOpenSettings: !granted && !canAskAgain,
+    rawStatus: permissions?.status ?? null,
+  };
+};
 
 export const configureNotificationHandler = () => {
   Notifications.setNotificationHandler({
@@ -30,21 +41,25 @@ const ensureAndroidChannel = async () => {
 export const ensureNotificationsReady = async ({ requestPermission = true } = {}) => {
   await ensureAndroidChannel();
 
-  if (!Device.isDevice) {
-    return false;
-  }
-
   const currentPermissions = await Notifications.getPermissionsAsync();
-  if (currentPermissions.granted) {
-    return true;
+  const currentStatus = toPermissionStatus(currentPermissions);
+  if (currentStatus.granted) {
+    return currentStatus;
   }
 
-  if (!requestPermission) {
-    return false;
+  if (!requestPermission || !currentStatus.canAskAgain) {
+    return currentStatus;
   }
 
   const requestedPermissions = await Notifications.requestPermissionsAsync();
-  return requestedPermissions.granted;
+  return toPermissionStatus(requestedPermissions);
+};
+
+export const getNotificationPermissionStatus = async () => {
+  await ensureAndroidChannel();
+
+  const permissions = await Notifications.getPermissionsAsync();
+  return toPermissionStatus(permissions);
 };
 
 const toJokePreview = (joke) => {
@@ -67,8 +82,8 @@ const toJokePreview = (joke) => {
 };
 
 export const scheduleNewJokeNotification = async (joke) => {
-  const hasPermission = await ensureNotificationsReady({ requestPermission: false });
-  if (!hasPermission) {
+  const permissionStatus = await ensureNotificationsReady({ requestPermission: false });
+  if (!permissionStatus.granted) {
     return;
   }
 
@@ -77,6 +92,7 @@ export const scheduleNewJokeNotification = async (joke) => {
       title: "A new Papa Pun is ready",
       body: `${toJokePreview(joke)} Tap to read the full joke in the app.`,
       sound: true,
+      channelId: NEW_JOKE_CHANNEL_ID,
       data: {
         type: "daily_joke",
       },

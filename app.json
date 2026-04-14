@@ -19,7 +19,8 @@
           "image": "./assets/icon.png",
           "imageWidth": 200
         }
-      ]
+      ],
+      "expo-background-task"
     ],
     "ios": {
       "supportsTablet": true,
