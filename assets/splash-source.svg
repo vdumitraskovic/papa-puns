@@ -1,0 +1,35 @@
+<svg width="1284" height="2778" viewBox="0 0 1284 2778" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="166" y1="220" x2="1180" y2="2560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF8EA"/>
+      <stop offset="0.56" stop-color="#FFF0CC"/>
+      <stop offset="1" stop-color="#FFD78B"/>
+    </linearGradient>
+    <linearGradient id="card" x1="274" y1="728" x2="1022" y2="1924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1C56A6"/>
+      <stop offset="0.6" stop-color="#2A7FD9"/>
+      <stop offset="1" stop-color="#F5A623"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="388" y1="1080" x2="852" y2="1642" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF9EF"/>
+      <stop offset="1" stop-color="#F8E7C9"/>
+    </linearGradient>
+    <filter id="shadow" x="192" y="744" width="900" height="1236" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="36" stdDeviation="34" flood-color="#154487" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="1284" height="2778" fill="url(#bg)"/>
+  <circle cx="198" cy="364" r="194" fill="#FFFFFF" fill-opacity="0.48"/>
+  <circle cx="1108" cy="512" r="132" fill="#FFD473" fill-opacity="0.34"/>
+  <circle cx="1046" cy="2370" r="178" fill="#1C56A6" fill-opacity="0.08"/>
+
+  <g filter="url(#shadow)">
+    <rect x="274" y="848" width="736" height="736" rx="176" fill="url(#card)"/>
+    <path d="M388 1108C388 1073.76 415.758 1046 450 1046H834C868.242 1046 896 1073.76 896 1108V1364C896 1398.24 868.242 1426 834 1426H650L550 1526V1426H450C415.758 1426 388 1398.24 388 1364V1108Z" fill="url(#bubble)" stroke="#11386F" stroke-width="24" stroke-linejoin="round"/>
+    <path d="M482 1178C512 1152 542 1150 570 1168C588 1180 600 1200 606 1228C612 1200 624 1180 642 1168C670 1150 700 1152 730 1178" stroke="#11386F" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M470 1290C488 1246 524 1220 560 1220C586 1220 604 1242 606 1270C608 1242 626 1220 652 1220C688 1220 724 1246 742 1290" stroke="#11386F" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M526 1336C548 1360 576 1372 606 1372C636 1372 664 1360 686 1336" stroke="#11386F" stroke-width="22" stroke-linecap="round"/>
+    <path d="M846 1018L862 1056L900 1072L862 1088L846 1126L830 1088L792 1072L830 1056L846 1018Z" fill="#FFE189" stroke="#11386F" stroke-width="16" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -7,16 +7,19 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF8EA",
+          "image": "./assets/icon.png",
+          "imageWidth": 200
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,
@@ -29,9 +32,10 @@
       "bundleIdentifier": "com.anonymous.papapuns"
     },
     "android": {
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFF8EA"
       },
       "package": "com.anonymous.papapuns",
       "permissions": [
